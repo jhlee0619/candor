@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CANDOR: Contrastive Self-Denoising Rewards for Label-Free Text-to-Image Post-Training</title>
+<meta name="description" content="CANDOR: an intrinsic GRPO reward for text-to-image flow-matching models from the model&#x27;s own denoising errors.">
+<style>
+body { margin: 0; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #222; line-height: 1.6; }
+main { max-width: 860px; margin: 0 auto; padding: 48px 20px; }
+h1 { font-size: 2em; line-height: 1.25; text-align: center; margin: 0 0 16px; }
+.authors, .affil { text-align: center; margin: 4px 0; }
+.affil { color: #555; }
+.links { text-align: center; margin: 24px 0 32px; }
+.btn { display: inline-block; margin: 4px; padding: 8px 18px; border-radius: 6px; background: #222; color: #fff; text-decoration: none; }
+.btn:hover { background: #444; }
+figure { margin: 0 0 32px; }
+figure img { width: 100%; height: auto; }
+figcaption { font-size: 0.92em; color: #444; margin-top: 8px; }
+h2 { font-size: 1.3em; margin: 32px 0 8px; }
+pre { background: #f5f5f5; padding: 14px; overflow-x: auto; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<main>
+<h1>CANDOR: Contrastive Self-Denoising Rewards for Label-Free Text-to-Image Post-Training</h1>
+<p class="authors">Junhyeok Lee<sup>1</sup>, Byung-Hoon Kim<sup>2</sup>, Kyu Sung Choi<sup>1</sup></p>
+<p class="affil"><sup>1</sup>Seoul National University &nbsp; <sup>2</sup>EverEx</p>
+<p class="links"><a class="btn" href="https://arxiv.org/abs/2611.25457">Paper</a> <a class="btn" href="https://github.com/jhlee0619/candor">Code</a> <a class="btn" href="https://huggingface.co/jhlee0619/candor">Adapters</a></p>
+<figure><img src="teaser.jpg" alt="Samples of the base model and of the model post-trained with CANDOR for five prompts"><figcaption><b>Base model before and after CANDOR post-training.</b> GenEval (left) and OCR text-rendering (right) test prompts; OCR labels: text to render. Hand-picked to show differences.</figcaption></figure>
+<h2>Abstract</h2>
+<p>Post-training text-to-image generators with reinforcement learning usually relies on external reward models that need annotated preferences or auxiliary evaluators and are prone to reward hacking. We show that the generator&#x27;s own denoising accuracy, used by a recent intrinsic reward, is a poor proxy for prompt fidelity. Within a same-prompt group, this absolute self-confidence is dominated by image complexity and ranks correct samples above incorrect ones near chance. We introduce CANDOR (Contrastive Alignment from Null-referenced Denoising lOg-Ratio), the log-ratio of unconditional to conditional denoising errors under shared noise probes, which measures how much the prompt helps the model denoise its own sample. It cancels prompt-independent difficulty that scales both errors and ranks the better of two same-prompt samples higher in 60% and 63% of pairs on compositional generation and text rendering. As the only Flow-GRPO reward for a flow-matching model, CANDOR improves text rendering, aesthetic and human-preference scores over the base model and a prior absolute self-confidence reward, with text-rendering and preference gains that stronger classifier-free guidance does not reproduce. On public Flow-GRPO adapters trained on external rewards, CANDOR further raises PickScore and ImageReward, so it can complement those rewards.</p>
+<h2>BibTeX</h2>
+<pre>@article{lee2026candor,
+  title   = {{CANDOR}: Contrastive Self-Denoising Rewards for Label-Free Text-to-Image Post-Training},
+  author  = {Lee, Junhyeok and Kim, Byung-Hoon and Choi, Kyu Sung},
+  journal = {arXiv preprint arXiv:2611.25457},
+  year    = {2026}
+}</pre>
+</main>
+</body>
+</html>

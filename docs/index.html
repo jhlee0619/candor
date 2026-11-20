@@ -4,39 +4,154 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CANDOR: Contrastive Self-Denoising Rewards for Label-Free Text-to-Image Post-Training</title>
-<meta name="description" content="CANDOR: an intrinsic GRPO reward for text-to-image flow-matching models from the model&#x27;s own denoising errors.">
+<meta name="description" content="CANDOR is a label-free GRPO reward for text-to-image flow models: how much the prompt helps the model denoise its own sample, not how well it denoises it.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="CANDOR: Contrastive Self-Denoising Rewards for Label-Free Text-to-Image Post-Training">
+<meta property="og:description" content="CANDOR is a label-free GRPO reward for text-to-image flow models: how much the prompt helps the model denoise its own sample, not how well it denoises it.">
+<meta property="og:url" content="https://jhlee0619.github.io/candor/">
+<meta property="og:image" content="https://jhlee0619.github.io/candor/teaser.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%239a3412'/%3E%3Cstop offset='1' stop-color='%23f59e0b'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='url(%23g)'/%3E%3Ctext x='32' y='45' font-family='Arial,sans-serif' font-size='36' font-weight='bold' fill='white' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://rsms.me">
+<link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="static/style.css">
 <style>
-body { margin: 0; font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: #222; line-height: 1.6; }
-main { max-width: 860px; margin: 0 auto; padding: 48px 20px; }
-h1 { font-size: 2em; line-height: 1.25; text-align: center; margin: 0 0 16px; }
-.authors, .affil { text-align: center; margin: 4px 0; }
-.affil { color: #555; }
-.links { text-align: center; margin: 24px 0 32px; }
-.btn { display: inline-block; margin: 4px; padding: 8px 18px; border-radius: 6px; background: #222; color: #fff; text-decoration: none; }
-.btn:hover { background: #444; }
-figure { margin: 0 0 32px; }
-figure img { width: 100%; height: auto; }
-figcaption { font-size: 0.92em; color: #444; margin-top: 8px; }
-h2 { font-size: 1.3em; margin: 32px 0 8px; }
-pre { background: #f5f5f5; padding: 14px; overflow-x: auto; font-size: 0.85em; }
+:root { --g1: #9a3412; --g2: #ea580c; --g3: #f59e0b; --accent: #e0560b; --accent-soft: #fff1e6; }
+[data-theme="dark"] { --accent-soft: rgba(234, 88, 12, .14); }
 </style>
+<script src="static/main.js"></script>
 </head>
 <body>
-<main>
-<h1>CANDOR: Contrastive Self-Denoising Rewards for Label-Free Text-to-Image Post-Training</h1>
-<p class="authors">Junhyeok Lee<sup>1</sup>, Byung-Hoon Kim<sup>2</sup>, Kyu Sung Choi<sup>1</sup></p>
-<p class="affil"><sup>1</sup>Seoul National University &nbsp; <sup>2</sup>EverEx</p>
-<p class="links"><a class="btn" href="https://arxiv.org/abs/2611.25457">Paper</a> <a class="btn" href="https://github.com/jhlee0619/candor">Code</a> <a class="btn" href="https://huggingface.co/jhlee0619/candor">Adapters</a></p>
-<figure><img src="teaser.jpg" alt="Samples of the base model and of the model post-trained with CANDOR for five prompts"><figcaption><b>Base model before and after CANDOR post-training.</b> GenEval (left) and OCR text-rendering (right) test prompts; OCR labels: text to render. Hand-picked to show differences.</figcaption></figure>
-<h2>Abstract</h2>
-<p>Post-training text-to-image generators with reinforcement learning usually relies on external reward models that need annotated preferences or auxiliary evaluators and are prone to reward hacking. We show that the generator&#x27;s own denoising accuracy, used by a recent intrinsic reward, is a poor proxy for prompt fidelity. Within a same-prompt group, this absolute self-confidence is dominated by image complexity and ranks correct samples above incorrect ones near chance. We introduce CANDOR (Contrastive Alignment from Null-referenced Denoising lOg-Ratio), the log-ratio of unconditional to conditional denoising errors under shared noise probes, which measures how much the prompt helps the model denoise its own sample. It cancels prompt-independent difficulty that scales both errors and ranks the better of two same-prompt samples higher in 60% and 63% of pairs on compositional generation and text rendering. As the only Flow-GRPO reward for a flow-matching model, CANDOR improves text rendering, aesthetic and human-preference scores over the base model and a prior absolute self-confidence reward, with text-rendering and preference gains that stronger classifier-free guidance does not reproduce. On public Flow-GRPO adapters trained on external rewards, CANDOR further raises PickScore and ImageReward, so it can complement those rewards.</p>
+<nav class="nav"><div class="wrap">
+<a class="brand" href="#top"><span class="mark">C</span>CANDOR</a>
+<div class="nav-links"><a href="#overview">Overview</a><a href="#method">Method</a><a href="#analysis">Analysis</a><a href="#results">Results</a><a href="#gallery">Gallery</a><a href="#bibtex">BibTeX</a></div>
+<button class="theme-btn" type="button" aria-label="Toggle dark mode"><svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+</div></nav>
+<header class="hero" id="top"><div class="wrap">
+<a class="chip reveal" href="https://arxiv.org/abs/2611.25457"><span class="dot"></span>arXiv 2611.25457</a>
+<h1 class="title reveal" style="--d:60ms"><span class="main">CANDOR</span><span class="sub">Contrastive Self-Denoising Rewards for <br>Label-Free Text-to-Image Post-Training</span></h1>
+<p class="tagline reveal" style="--d:140ms">A label-free reward for Flow-GRPO that scores <b>how much the prompt helps</b> a text-to-image model denoise its own sample, not <b>how well</b> the model denoises it.</p>
+<p class="authors reveal" style="--d:200ms"><span>Junhyeok Lee<sup>1</sup></span><span>Byung-Hoon Kim<sup>2</sup></span><span>Kyu Sung Choi<sup>1</sup></span></p>
+<p class="affils reveal" style="--d:240ms"><span><sup>1</sup>Seoul National University</span><span><sup>2</sup>EverEx</span></p>
+<div class="btns reveal" style="--d:320ms">
+<a class="btn primary" href="https://arxiv.org/pdf/2611.25457"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg>Paper</a>
+<a class="btn" href="https://arxiv.org/abs/2611.25457"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>arXiv</a>
+<a class="btn" href="https://github.com/jhlee0619/candor"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>Code</a>
+<a class="btn" href="https://huggingface.co/jhlee0619/candor"><span class="emoji" aria-hidden="true">🤗</span>Adapters</a>
+<a class="btn" href="#bibtex"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.17 6C4.9 6 3 7.9 3 10.17V18h7v-7H6.1c.2-1.3 1.3-2.3 2.6-2.3H10V6H7.17zm9 0C13.9 6 12 7.9 12 10.17V18h7v-7h-3.9c.2-1.3 1.3-2.3 2.6-2.3H19V6h-2.83z"/></svg>BibTeX</a>
+</div>
+
+<figure class="figure-card reveal" style="--d:420ms; margin-top:44px; text-align:left">
+<div class="compare-scroll"><div class="inner">
+<div class="compare" style="--n:5">
+<img src="static/teaser_candor.webp" width="2560" height="512" alt="Five samples of Stable Diffusion 3.5 Medium after CANDOR post-training">
+<div class="top"><img src="static/teaser_base.webp" width="2560" height="512" alt="The same five prompts from the base model"></div>
+<div class="bar"></div><div class="knob" aria-hidden="true">⇆</div>
+<span class="tagl">Base model</span><span class="tagr">+ CANDOR</span>
+<input type="range" min="0" max="100" value="50" aria-label="Slide to compare the base model and CANDOR">
+</div>
+<div class="compare-labels" style="grid-template-columns:repeat(5,1fr)"><div>a photo of an elephant below a surfboard</div><div>a photo of two trains</div><div>“Abandon All Hope”</div><div>“Bestsellers of 2023”</div><div>“No Liquids Allowed”</div></div>
+</div></div>
+<div class="compare-hint mobile">Scroll sideways to see all five prompts.</div>
+<figcaption><b>Base model before and after CANDOR post-training.</b> Drag to compare. GenEval (left two) and OCR text-rendering (right three) test prompts with shared initial noise; OCR labels: text to render. Hand-picked to show differences.</figcaption>
+</figure>
+</div></header>
+
+<section class="sec" id="overview" style="padding-top:28px"><div class="wrap">
+<div class="stats">
+<div class="card stat reveal"><div class="num">0.60 <small>/</small> 0.63</div><div class="lbl">Concordance of CANDOR with correctness within same-prompt groups, GenEval / OCR. Absolute self-confidence: 0.48 / 0.51 (chance 0.5).</div></div>
+<div class="card stat reveal" style="--d:80ms"><div class="num">0.63 → 0.70</div><div class="lbl">OCR text-rendering score of SD3.5 Medium with CANDOR as the only reward. ImageReward 0.91 → 1.09.</div></div>
+<div class="card stat reveal" style="--d:160ms"><div class="num">1.12 → 1.28</div><div class="lbl">ImageReward of the public Flow-GRPO (GenEval) adapter after further post-training with CANDOR. PickScore 22.53 → 22.73.</div></div>
+<div class="card stat reveal" style="--d:240ms"><div class="num">0 <small>labels</small></div><div class="lbl">No annotations and no reward model: the empty-prompt branch that classifier-free guidance already has gives the contrast.</div></div>
+</div>
+<div class="narrow" style="margin-top:64px">
+<span class="eyebrow">Abstract</span>
+<p class="reveal">Post-training text-to-image generators with reinforcement learning usually relies on external reward models that need annotated preferences or auxiliary evaluators and are prone to reward hacking. We show that the generator&#x27;s own denoising accuracy, used by a recent intrinsic reward, is a poor proxy for prompt fidelity. Within a same-prompt group, this absolute self-confidence is dominated by image complexity and ranks correct samples above incorrect ones near chance. We introduce CANDOR (Contrastive Alignment from Null-referenced Denoising lOg-Ratio), the log-ratio of unconditional to conditional denoising errors under shared noise probes, which measures how much the prompt helps the model denoise its own sample. It cancels prompt-independent difficulty that scales both errors and ranks the better of two same-prompt samples higher in 60% and 63% of pairs on compositional generation and text rendering. As the only Flow-GRPO reward for a flow-matching model, CANDOR improves text rendering, aesthetic and human-preference scores over the base model and a prior absolute self-confidence reward, with text-rendering and preference gains that stronger classifier-free guidance does not reproduce. On public Flow-GRPO adapters trained on external rewards, CANDOR further raises PickScore and ImageReward, so it can complement those rewards.</p>
+</div>
+</div></section>
+
+<section class="sec tint" id="method"><div class="wrap">
+<div class="split">
+<div class="reveal">
+<span class="eyebrow">Method</span>
+<h2>Read self-denoising contrastively</h2>
+<p>A sample can be easy to denoise because it is <b>simple</b>, such as a flat background or a texture-free object, not because it follows the prompt. Image complexity makes a sample harder to denoise with or without the prompt, whereas prompt fidelity should only help the prompt-conditioned prediction.</p>
+<p>CANDOR therefore rewards the <b>contrast</b> between the two predictions on the same re-noised latent and noise:</p>
+</div>
+<div class="reveal" style="--d:100ms">
+<div class="eq"><math display="block"><mi>D</mi><mo>=</mo><mi>log</mi><mspace width="0.25em"/><mi mathvariant="normal">MSE</mi><mo stretchy="false">(</mo><mi mathvariant="normal">&#x2205;</mi><mo stretchy="false">)</mo><mo>&#x2212;</mo><mi>log</mi><mspace width="0.25em"/><mi mathvariant="normal">MSE</mi><mo stretchy="false">(</mo><mi>c</mi><mo stretchy="false">)</mo></math></div>
+<div class="callout">MSE(∅) and MSE(c) are the errors of the model's noise estimate without and with the prompt. The log-ratio <b>cancels any difficulty factor that scales both errors</b>, so D is large when the prompt explains the sample.</div>
+</div>
+</div>
+<figure class="figure-card reveal" style="margin-top:40px">
+<div class="canvas"><img src="static/overview.webp" width="2783" height="886" alt="Overview of CANDOR: rollout and re-noising, the contrastive denoising log-ratio, and GRPO" data-zoom loading="lazy"></div>
+<figcaption><b>Overview of CANDOR.</b> Rollout &amp; re-noising: policy samples re-noised with antithetic probes. Contrastive denoising log-ratio: D<sub>i,t</sub> of empty-prompt to prompt errors (CFG off). GRPO: per-sample rewards (timestep mean of z-scored D<sub>i,t</sub>) group-normalized into advantages. Error maps: latent error of this sample at t = 0.60, averaged over probes and channels, one color scale; other thumbnails: illustrative pixel-space renderings.</figcaption>
+</figure>
+<div class="steps">
+<div class="card step reveal"><div class="n">1</div><h3>Rollout &amp; re-noising</h3><p>Sample a group of images per prompt, then re-noise each final latent at several timesteps with antithetic noise pairs (+ε, −ε).</p></div>
+<div class="card step reveal" style="--d:80ms"><div class="n">2</div><h3>Contrastive log-ratio</h3><p>Predict the noise with and without the prompt on the same latent and noise. D is the log-ratio of the two errors.</p></div>
+<div class="card step reveal" style="--d:160ms"><div class="n">3</div><h3>GRPO update</h3><p>Average the z-scored D over timesteps into one reward per sample, normalize rewards within the group into advantages, and update the policy with Flow-GRPO.</p></div>
+</div>
+</div></section>
+
+<section class="sec" id="analysis"><div class="wrap">
+<div class="split">
+<div class="reveal">
+<span class="eyebrow">Analysis</span>
+<h2>Absolute self-confidence tracks simplicity</h2>
+<p>GRPO centers rewards within each prompt's group, so only their relative values drive the update. Within these groups, absolute self-confidence S is dominated by image complexity and ranks correct samples above incorrect ones <b>near chance</b>.</p>
+<ul class="clean">
+<li><b>S follows complexity</b> (r = −0.75 and −0.74), and within a group it scores samples almost exactly like the unconditional confidence (correlation 0.999).</li>
+<li><b>D is nearly uncorrelated</b> with complexity and with S, and is the only score clearly above chance, also with complexity regressed out.</li>
+<li>At the training CFG scale of 4.5, on training prompts, D reaches 0.615 on both benchmarks, against 0.550 and 0.522 for S.</li>
+</ul>
+</div>
+<div class="reveal" style="--d:100ms">
+<div class="table-wrap"><table class="res">
+<thead><tr><th>Score</th><th>GenEval</th><th>OCR</th></tr></thead>
+<tbody><tr class="blockhead"><td colspan="3">Within-group correlation</td></tr><tr class=""><td>Absolute S vs. complexity</td><td>−0.75</td><td>−0.74</td></tr><tr class=""><td>CANDOR D vs. complexity</td><td>0.12</td><td>0.11</td></tr><tr class=""><td>CANDOR D vs. absolute S</td><td>−0.11</td><td>−0.09</td></tr><tr class="blockhead"><td colspan="3">Within-group concordance with correctness ↑</td></tr><tr class=""><td>Complexity (log PNG size)</td><td><span class="u">0.53</span></td><td>0.50</td></tr><tr class=""><td>Absolute S</td><td>0.48</td><td><span class="u">0.51</span></td></tr><tr class="ours"><td>CANDOR D</td><td><span class="b">0.60</span></td><td><span class="b">0.63</span></td></tr><tr class="blockhead"><td colspan="3">Diagnostic</td></tr><tr class=""><td>CANDOR D (w/o complexity)</td><td>0.60</td><td>0.63</td></tr></tbody></table></div>
+<p class="table-note"><b>Offline analysis of intrinsic rewards.</b> Base-model test-prompt rollouts at CFG 7.0. Concordance: fraction of same-prompt pairs ranked correctly (0.5 = chance); w/o complexity: log PNG size regressed out. Bold: best; underline: second best in the concordance block.</p>
+</div>
+</div>
+</div></section>
+
+<section class="sec tint" id="results"><div class="wrap">
+<div class="narrow center reveal">
+<span class="eyebrow">Results</span>
+<h2>Better text rendering, aesthetics and preference</h2>
+<p class="lead">As the only reward, CANDOR improves text rendering, aesthetic and human-preference scores over the base model and over SOLACE, a prior absolute self-confidence reward, on external metrics that the reward never sees. On public Flow-GRPO adapters trained on external rewards, it further raises PickScore and ImageReward.</p>
+</div>
+<div class="table-wrap reveal" style="margin-top:20px"><table class="res">
+<thead>
+<tr class="grp"><th></th><th colspan="2">Task-specific</th><th colspan="2">Alignment &amp; aesthetics</th><th colspan="4">Human preference</th></tr>
+<tr><th>Model</th><th>GenEval ↑</th><th>OCR ↑</th><th>CLIPScore ↑</th><th>Aesthetic ↑</th><th>PickScore ↑</th><th>HPSv2.1 ↑</th><th>ImageReward ↑</th><th>UnifiedReward ↑</th></tr>
+</thead>
+<tbody><tr class="blockhead"><td colspan="9">Reference models (not ranked)</td></tr><tr class="ref"><td class="ind0">SDXL</td><td>0.54</td><td>0.13</td><td>0.278</td><td>5.60</td><td>22.30</td><td>0.265</td><td>0.55</td><td>2.84</td></tr><tr class="ref"><td class="ind0">SD3.5-L</td><td>0.70</td><td>0.70</td><td>0.290</td><td>5.53</td><td>22.79</td><td>0.289</td><td>0.97</td><td>3.25</td></tr><tr class="blockhead"><td colspan="9">Base model: SD3.5 Medium</td></tr><tr class=""><td class="ind0">Base</td><td><span class="u">0.69</span></td><td><span class="u">0.63</span></td><td><span class="u">0.284</span></td><td><span class="u">5.38</span></td><td><span class="u">22.37</span></td><td><span class="u">0.283</span></td><td><span class="u">0.91</span></td><td><span class="u">3.11</span></td></tr><tr class=""><td class="ind1">+ SOLACE</td><td><span class="u">0.69</span></td><td><span class="u">0.63</span></td><td><span class="b">0.285</span></td><td>5.35</td><td>22.36</td><td>0.276</td><td>0.86</td><td>3.09</td></tr><tr class="ours"><td class="ind1">+ CANDOR</td><td><span class="b">0.71</span></td><td><span class="b">0.70</span></td><td><span class="b">0.285</span></td><td><span class="b">5.45</span></td><td><span class="b">22.56</span></td><td><span class="b">0.297</span></td><td><span class="b">1.09</span></td><td><span class="b">3.20</span></td></tr><tr class="blockhead"><td colspan="9">On top of the public Flow-GRPO (GenEval) adapter</td></tr><tr class=""><td class="ind1">+ Flow-GRPO (GenEval)</td><td><span class="b">0.94</span></td><td><span class="u">0.71</span></td><td><span class="u">0.294</span></td><td><span class="u">5.33</span></td><td><span class="u">22.53</span></td><td><span class="u">0.280</span></td><td><span class="u">1.12</span></td><td><span class="b">3.27</span></td></tr><tr class=""><td class="ind2">+ SOLACE</td><td><span class="u">0.92</span></td><td>0.68</td><td>0.292</td><td><span class="u">5.33</span></td><td>22.47</td><td>0.270</td><td>1.00</td><td><span class="u">3.25</span></td></tr><tr class="ours"><td class="ind2">+ CANDOR</td><td><span class="u">0.92</span></td><td><span class="b">0.73</span></td><td><span class="b">0.301</span></td><td><span class="b">5.52</span></td><td><span class="b">22.73</span></td><td><span class="b">0.305</span></td><td><span class="b">1.28</span></td><td>3.20</td></tr><tr class="blockhead"><td colspan="9">On top of the public Flow-GRPO (OCR) adapter</td></tr><tr class=""><td class="ind1">+ Flow-GRPO (OCR)</td><td><span class="u">0.70</span></td><td><span class="b">0.92</span></td><td><span class="u">0.290</span></td><td><span class="b">5.31</span></td><td><span class="u">22.45</span></td><td><span class="u">0.284</span></td><td><span class="u">0.99</span></td><td><span class="b">3.16</span></td></tr><tr class=""><td class="ind2">+ SOLACE</td><td>0.69</td><td><span class="u">0.89</span></td><td>0.289</td><td><span class="u">5.30</span></td><td>22.38</td><td>0.277</td><td>0.92</td><td><span class="u">3.13</span></td></tr><tr class="ours"><td class="ind2">+ CANDOR</td><td><span class="b">0.74</span></td><td><span class="b">0.92</span></td><td><span class="b">0.293</span></td><td>5.24</td><td><span class="b">22.55</span></td><td><span class="b">0.293</span></td><td><span class="b">1.13</span></td><td>3.11</td></tr><tr class="blockhead"><td colspan="9">On top of the public Flow-GRPO (PickScore) adapter</td></tr><tr class=""><td class="ind1">+ Flow-GRPO (PickScore)</td><td><span class="b">0.75</span></td><td><span class="u">0.73</span></td><td>0.280</td><td><span class="u">5.91</span></td><td><span class="u">23.47</span></td><td><span class="u">0.321</span></td><td><span class="u">1.31</span></td><td><span class="u">3.41</span></td></tr><tr class=""><td class="ind2">+ SOLACE</td><td>0.72</td><td>0.68</td><td><span class="b">0.287</span></td><td>5.54</td><td>22.70</td><td>0.281</td><td>1.04</td><td>3.25</td></tr><tr class="ours"><td class="ind2">+ CANDOR</td><td><span class="u">0.74</span></td><td><span class="b">0.76</span></td><td><span class="u">0.281</span></td><td><span class="b">5.97</span></td><td><span class="b">23.55</span></td><td><span class="b">0.322</span></td><td><span class="b">1.36</span></td><td><span class="b">3.43</span></td></tr></tbody></table></div>
+<p class="table-note"><b>Post-training results.</b> Measured in this work. GenEval: official task-averaged; OCR: Flow-GRPO test set; other metrics: DrawBench. Flow-GRPO (X): public adapter for X. + Y: the model above, post-trained with reward Y. Bold: best; underline: second best per block; ties share the mark. SOLACE: absolute self-confidence reward, evaluated from its public checkpoint.</p>
+</div></section>
+
+<section class="sec" id="gallery"><div class="wrap">
+<div class="narrow center reveal">
+<span class="eyebrow">Qualitative</span>
+<h2>Samples on four prompt sets</h2>
+<p class="lead">Shared initial noise per prompt. OCR labels give the text to render. Hand-picked to show differences.</p>
+<div role="tablist" class="tabs" aria-label="Prompt set"><button role="tab" id="tab-drawbench" aria-controls="panel-drawbench" aria-selected="true">DrawBench</button><button role="tab" id="tab-geneval" aria-controls="panel-geneval" aria-selected="false">GenEval</button><button role="tab" id="tab-ocr" aria-controls="panel-ocr" aria-selected="false">OCR</button><button role="tab" id="tab-pickscore" aria-controls="panel-pickscore" aria-selected="false">Pick-a-Pic</button></div>
+</div>
+<div class="gallery-wrap"><div class="tabpanel" role="tabpanel" id="panel-drawbench" aria-labelledby="tab-drawbench"><div class="gal-head"><div>Base model</div><div>+ SOLACE</div><div class="o">+ CANDOR</div></div><div class="gal-row"><img src="static/qual_drawbench_0.webp" width="1152" height="384" loading="lazy" data-zoom alt="DrawBench prompt: A triangular pink stop sign. A pink stop sign in the shape of a triangle.. Left to right: base model, + SOLACE, + CANDOR"><div class="p">A triangular pink stop sign. A pink stop sign in the shape of a triangle.</div></div><div class="gal-row"><img src="static/qual_drawbench_1.webp" width="1152" height="384" loading="lazy" data-zoom alt="DrawBench prompt: A separate seat for one person, typically with a back and four legs.. Left to right: base model, + SOLACE, + CANDOR"><div class="p">A separate seat for one person, typically with a back and four legs.</div></div><div class="gal-row"><img src="static/qual_drawbench_2.webp" width="1152" height="384" loading="lazy" data-zoom alt="DrawBench prompt: New York Skyline with &#x27;Hello World&#x27; written with fireworks on the sky.. Left to right: base model, + SOLACE, + CANDOR"><div class="p">New York Skyline with &#x27;Hello World&#x27; written with fireworks on the sky.</div></div></div><div class="tabpanel" role="tabpanel" id="panel-geneval" aria-labelledby="tab-geneval" hidden><div class="gal-head"><div>Base model</div><div>+ SOLACE</div><div class="o">+ CANDOR</div></div><div class="gal-row"><img src="static/qual_geneval_0.webp" width="1152" height="384" loading="lazy" data-zoom alt="GenEval prompt: a photo of a toothbrush and a snowboard. Left to right: base model, + SOLACE, + CANDOR"><div class="p">a photo of a toothbrush and a snowboard</div></div><div class="gal-row"><img src="static/qual_geneval_1.webp" width="1152" height="384" loading="lazy" data-zoom alt="GenEval prompt: a photo of two ties. Left to right: base model, + SOLACE, + CANDOR"><div class="p">a photo of two ties</div></div><div class="gal-row"><img src="static/qual_geneval_2.webp" width="1152" height="384" loading="lazy" data-zoom alt="GenEval prompt: a photo of a suitcase left of a banana. Left to right: base model, + SOLACE, + CANDOR"><div class="p">a photo of a suitcase left of a banana</div></div></div><div class="tabpanel" role="tabpanel" id="panel-ocr" aria-labelledby="tab-ocr" hidden><div class="gal-head"><div>Base model</div><div>+ SOLACE</div><div class="o">+ CANDOR</div></div><div class="gal-row"><img src="static/qual_ocr_0.webp" width="1152" height="384" loading="lazy" data-zoom alt="OCR prompt: “Ride the City”. Left to right: base model, + SOLACE, + CANDOR"><div class="p">“Ride the City”</div></div><div class="gal-row"><img src="static/qual_ocr_1.webp" width="1152" height="384" loading="lazy" data-zoom alt="OCR prompt: “Secret Floor”. Left to right: base model, + SOLACE, + CANDOR"><div class="p">“Secret Floor”</div></div><div class="gal-row"><img src="static/qual_ocr_2.webp" width="1152" height="384" loading="lazy" data-zoom alt="OCR prompt: “Street Art Rules”. Left to right: base model, + SOLACE, + CANDOR"><div class="p">“Street Art Rules”</div></div></div><div class="tabpanel" role="tabpanel" id="panel-pickscore" aria-labelledby="tab-pickscore" hidden><div class="gal-head"><div>Base model</div><div>+ SOLACE</div><div class="o">+ CANDOR</div></div><div class="gal-row"><img src="static/qual_pickscore_0.webp" width="1152" height="384" loading="lazy" data-zoom alt="Pick-a-Pic prompt: picasso style art of the galaxy. Left to right: base model, + SOLACE, + CANDOR"><div class="p">picasso style art of the galaxy</div></div><div class="gal-row"><img src="static/qual_pickscore_1.webp" width="1152" height="384" loading="lazy" data-zoom alt="Pick-a-Pic prompt: a futuristic robot made of wood. Left to right: base model, + SOLACE, + CANDOR"><div class="p">a futuristic robot made of wood</div></div><div class="gal-row"><img src="static/qual_pickscore_2.webp" width="1152" height="384" loading="lazy" data-zoom alt="Pick-a-Pic prompt: Grim reaper playing an electric guitar. Left to right: base model, + SOLACE, + CANDOR"><div class="p">Grim reaper playing an electric guitar</div></div></div></div>
+</div></section>
+<section class="sec tint" id="bibtex"><div class="wrap narrow" style="max-width:1000px">
+<span class="eyebrow">Citation</span>
 <h2>BibTeX</h2>
-<pre>@article{lee2026candor,
+<div class="bib reveal"><div class="bib-bar"><span>lee2026candor</span><button class="copy" type="button" data-target="#bibtext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></svg><span>Copy</span></button></div><pre id="bibtext">@article{lee2026candor,
   title   = {{CANDOR}: Contrastive Self-Denoising Rewards for Label-Free Text-to-Image Post-Training},
   author  = {Lee, Junhyeok and Kim, Byung-Hoon and Choi, Kyu Sung},
   journal = {arXiv preprint arXiv:2611.25457},
   year    = {2026}
-}</pre>
-</main>
+}</pre></div>
+</div></section>
+<footer><div class="wrap">Figures and numbers on this page are from the paper. Questions and issues: <a href="https://github.com/jhlee0619/candor/issues">GitHub issues</a>.</div></footer>
 </body>
 </html>

@@ -88,7 +88,7 @@
 </div>
 <figure class="figure-card reveal" style="margin-top:40px">
 <div class="canvas"><img src="static/overview.webp" width="2783" height="886" alt="Overview of CANDOR: rollout and re-noising, the contrastive denoising log-ratio, and GRPO" data-zoom loading="lazy"></div>
-<figcaption><b>Overview of CANDOR.</b> Rollout &amp; re-noising: policy samples re-noised with antithetic probes. Contrastive denoising log-ratio: D<sub>i,t</sub> of empty-prompt to prompt errors (CFG off). GRPO: per-sample rewards (timestep mean of z-scored D<sub>i,t</sub>) group-normalized into advantages. Error maps: latent error of this sample at t = 0.60, averaged over probes and channels, one color scale; other thumbnails: illustrative pixel-space renderings.</figcaption>
+<figcaption><b>Overview of CANDOR.</b> Rollout &amp; re-noising: policy samples re-noised with antithetic probes. Contrastive denoising log-ratio: D<sub>i,t</sub> of empty-prompt to prompt errors (CFG off). GRPO: per-sample rewards (timestep mean of z-scored D<sub>i,t</sub>) group-normalized into advantages. Error maps: latent error of this sample at t = 0.60, averaged over probes and channels, one color scale.</figcaption>
 </figure>
 <div class="steps">
 <div class="card step reveal"><div class="n">1</div><h3>Rollout &amp; re-noising</h3><p>Sample a group of images per prompt, then re-noise each final latent at several timesteps with antithetic noise pairs (+ε, −ε).</p></div>
